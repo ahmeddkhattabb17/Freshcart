@@ -20,7 +20,7 @@ type WishlistItem = {
 
 const wishlistItems: WishlistItem[] = [];
 
-function WishlistRow({ item, onRemove }: { item: WishlistItem; onRemove: (id: string | number) => void }) {
+function WishlistRow({ item, onRemove, adding, onAdd }: { item: WishlistItem; onRemove: (id: string | number) => void; adding: boolean; onAdd: (item: WishlistItem) => void }) {
   return (
     <div className="grid items-center gap-4 border-t border-slate-100 px-5 py-4 md:grid-cols-[minmax(300px,1.8fr)_150px_150px_185px]">
       <div className="flex items-center gap-4">
@@ -50,9 +50,9 @@ function WishlistRow({ item, onRemove }: { item: WishlistItem; onRemove: (id: st
         {item.inStock ? "In Stock" : "Out of Stock"}
       </span>
       <div className="flex items-center gap-2">
-        <button onClick={() => { if (!window.localStorage.getItem("freshcart-token")) { window.alert("Please sign in first"); return; } void addToCart(item.id).then(() => window.alert("Added to cart")).catch((error) => window.alert(error.message)); }} className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-xs font-semibold text-white hover:bg-emerald-700">
+        <button onClick={() => onAdd(item)} disabled={adding} className={`flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-emerald-700 ${adding ? "scale-95 opacity-80" : ""}`}>
           <Icon name="cart" className="h-4 w-4" />
-          Add to Cart
+          {adding ? "Added" : "Add to Cart"}
         </button>
         <button onClick={() => onRemove(item.id)}
           className="grid h-10 w-10 place-items-center rounded-lg border border-slate-200 text-slate-400 hover:text-red-500"
@@ -110,11 +110,19 @@ function Services() {
 
 export default function WishlistPage() {
   const [items, setItems] = useState<WishlistItem[]>([]);
+  const [addingId, setAddingId] = useState<string | number | null>(null);
+  const [toast, setToast] = useState("");
+  const addItemToCart = async (item: WishlistItem) => {
+    if (!window.localStorage.getItem("freshcart-token")) { setToast("Please sign in first"); return; }
+    setAddingId(item.id);
+    try { await addToCart(item.id); setToast("Added to cart"); } catch (error) { setToast(error instanceof Error ? error.message : "Unable to add to cart"); } finally { setAddingId(null); window.setTimeout(() => setToast(""), 2500); }
+  };
   const removeItem = (id: string | number) => removeFromWishlist(id).then(() => setItems((current) => current.filter((item) => item.id !== id))).catch((error) => window.alert(error.message));
   useEffect(() => { const clearOnLogout = () => { if (!window.localStorage.getItem("freshcart-token")) setItems([]); }; window.addEventListener("auth-change", clearOnLogout); getWishlist().then((data: any[]) => setItems(data.map((entry) => { const product = entry.product ?? entry; return { id: product._id ?? product.id, name: product.title ?? product.name, category: product.category?.name ?? "Product", price: `${product.priceAfterDiscount ?? product.price ?? 0} EGP`, oldPrice: product.priceAfterDiscount ? `${product.price} EGP` : undefined, imageUrl: product.imageCover ?? product.imageUrl ?? "", inStock: true }; }))).catch(() => setItems([])); return () => window.removeEventListener("auth-change", clearOnLogout); }, []);
   return (
     <>
       <Navbar />
+      {toast && <div role="status" className="fixed left-1/2 top-6 z-50 -translate-x-1/2 rounded-lg bg-white px-4 py-3 text-sm font-semibold text-emerald-700 shadow-xl ring-1 ring-emerald-100">{toast}</div>}
       <main className="min-h-[720px] bg-white">
         <div className="mx-auto max-w-6xl px-4 py-7">
           <p className="text-sm text-slate-500">Home &nbsp;/&nbsp; Wishlist</p>
@@ -139,7 +147,7 @@ export default function WishlistPage() {
               <span>Actions</span>
             </div>
             {items.map((item) => (
-                <WishlistRow key={item.id} item={item} onRemove={removeItem} />
+                <WishlistRow key={item.id} item={item} onRemove={removeItem} adding={addingId === item.id} onAdd={addItemToCart} />
             ))}
             {items.length === 0 && (
               <div className="px-6 py-24 text-center text-sm text-slate-400">

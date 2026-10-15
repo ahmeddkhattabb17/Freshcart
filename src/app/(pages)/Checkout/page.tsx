@@ -10,9 +10,9 @@ import { createCashOrder, createCheckoutSession } from "@/services/orders.servic
 import { z } from "zod";
 
 const checkoutSchema = z.object({
-  city: z.string().trim().min(1, "You must fill this field with your city"),
-  details: z.string().trim().min(1, "You must fill this field with your street address"),
-  phone: z.string().trim().min(1, "You must fill this field with your phone number").regex(/^01\d{9}$/, "Enter a valid Egyptian phone number"),
+  city: z.string().trim().min(1, "Fill this out please"),
+  details: z.string().trim().min(1, "Fill this out please"),
+  phone: z.string().trim().min(1, "Fill this out please").regex(/^01\d{9}$/, "Egyptian numbers only"),
 });
 
 type CheckoutItem = {

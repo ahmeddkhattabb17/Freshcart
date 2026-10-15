@@ -224,7 +224,7 @@ export default function OrdersPage() {
       .then((response) => {
         const payload: any = response;
         const data = Array.isArray(payload) ? payload : payload?.orders ?? payload?.data ?? [];
-        const mappedOrders: Order[] = data.map((raw: any, orderIndex: number) => ({
+        const mappedOrders: Order[] = [...data].sort((a: any, b: any) => Date.parse(b.createdAt ?? "") - Date.parse(a.createdAt ?? "")).map((raw: any, orderIndex: number) => ({
           id: raw._id ?? raw.id ?? `order-${orderIndex}`,
           status: (raw.isDelivered ? "Delivered" : raw.isPaid ? "On the way" : "Processing") as Order["status"],
           date: raw.createdAt ? new Date(raw.createdAt).toLocaleDateString() : "",
@@ -242,7 +242,6 @@ export default function OrdersPage() {
           })),
         }));
         setOrders(mappedOrders);
-        setExpandedOrderId(mappedOrders[0]?.id ?? null);
       })
       .catch(() => setOrders([]))
       .finally(() => setLoading(false));
