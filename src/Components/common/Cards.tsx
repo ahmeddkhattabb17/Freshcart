@@ -39,7 +39,7 @@ export default function Cards({ items = [], columns = 5 }: { items?: ProductCard
               <Icon name="return" className="h-3.5 w-3.5" />
             </button>
           </div>
-          <Link href={`/ProductDetails?productId=${product.id}`} aria-label={`View ${product.name}`} className="block">
+          <Link href={`/ProductDetails?productId=${encodeURIComponent(String(product.id))}`} aria-label={`View ${product.name}`} className="block">
           <div
             className={`relative mb-2 flex aspect-square items-center justify-center overflow-hidden rounded-md ${product.accent ?? "bg-slate-50"}`}
           >
