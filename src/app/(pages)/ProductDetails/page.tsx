@@ -65,12 +65,14 @@ function PurchasePanel({ product }: { product: Product }) {
   const searchParams = useSearchParams();
   const [quantity, setQuantity] = useState(1);
   const [message, setMessage] = useState("");
+  function showMessage(value: string) { setMessage(value); window.setTimeout(() => setMessage(""), 2500); }
   const price = Number(product.price.replace(/[^0-9.]/g, "")) || 0;
-  async function cartAction() { if (!window.localStorage.getItem("freshcart-token")) { setMessage("Please sign in first"); return; } try { await addToCart(productId()); setMessage("Added to cart"); } catch (error) { setMessage(error instanceof Error ? error.message : "Unable to add to cart"); } }
-  async function wishlistAction() { if (!window.localStorage.getItem("freshcart-token")) { setMessage("Please sign in first"); return; } try { await addToWishlist(productId()); setMessage("Added to wishlist"); } catch (error) { setMessage(error instanceof Error ? error.message : "Unable to add to wishlist"); } }
+  async function cartAction() { if (!window.localStorage.getItem("freshcart-token")) { showMessage("Please sign in first"); return; } try { await addToCart(productId()); showMessage("Added to cart"); } catch (error) { showMessage(error instanceof Error ? error.message : "Unable to add to cart"); } }
+  async function wishlistAction() { if (!window.localStorage.getItem("freshcart-token")) { showMessage("Please sign in first"); return; } try { await addToWishlist(productId()); showMessage("Added to wishlist"); } catch (error) { showMessage(error instanceof Error ? error.message : "Unable to add to wishlist"); } }
   function productId() { return searchParams.get("productId") ?? searchParams.get("id") ?? product.id ?? ""; }
   return (
     <section className="rounded-xl border border-slate-100 bg-white p-6 shadow-sm">
+      {message && <div role="status" className="fixed left-1/2 top-6 z-50 -translate-x-1/2 rounded-lg bg-white px-4 py-3 text-sm font-semibold text-emerald-700 shadow-xl ring-1 ring-emerald-100">{message}</div>}
       <div className="flex flex-wrap gap-2">
         <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-600">
           {product.category}
@@ -145,7 +147,6 @@ function PurchasePanel({ product }: { product: Product }) {
           <Icon name="heart" className="h-4 w-4" />
           Add to Wishlist
         </button>
-        {message && <p className="mt-2 text-center text-sm font-semibold text-emerald-600">{message}</p>}
         <button
           className="grid h-10 w-10 place-items-center rounded-lg border border-slate-200"
           aria-label="Share product"
