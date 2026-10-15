@@ -1,95 +1,59 @@
 # Fresh Cart
 
-Fresh Cart is a responsive e-commerce frontend built with Next.js, React, TypeScript, and Tailwind CSS. The project focuses on delivering a clear shopping experience across product discovery, cart management, checkout, and order-related flows.
+A modern e-commerce frontend built with Next.js and TypeScript, focused on product discovery, API-driven interfaces, authentication flows, wishlist and cart interactions, checkout, responsive shopping experiences, and an admin dashboard.
+
+## Overview
+
+Fresh Cart was built to explore the structure and interaction patterns of a real-world e-commerce product. The project emphasizes reusable UI, remote data integration, stateful shopping flows, responsive behavior across devices, and practical dashboard management.
 
 ## Features
 
-- Browse product listings and view product details.
-- Search and filter products.
-- User authentication interface.
-- Add products to the cart and manage cart contents.
-- Save products to a wishlist.
-- Checkout and order-related user flows.
-- Admin dashboard interface.
-- API integration for dynamic e-commerce data.
-- Responsive layouts for desktop, tablet, and mobile screens.
-- Loading, empty, and error states where applicable.
+- Product discovery and browsing
+- Categories and brands
+- Product details and related products
+- Search, filtering, and sorting
+- Authentication interfaces
+- Shopping cart and quantity management
+- Wishlist
+- Checkout flow
+- Orders and account pages
+- Admin dashboard
+- Responsive layouts
+- Loading, empty, and feedback states
+- API-driven data integration
 
-## Technology Stack
+## Technology
 
-- **Next.js**
-- **React**
-- **TypeScript**
-- **Tailwind CSS**
-- **REST API integration**
+- Next.js
+- TypeScript
+- React
+- Route Academy E-Commerce API
+- Responsive Web Design
 
-## Project Scope and Credits
+## Architecture
 
-This project was completed as part of the Route Academy learning experience.
+The frontend is organized around reusable components, page-level experiences, API-driven data flows, and dashboard functionality. Application logic and presentation are kept structured so features can be extended without turning individual pages into monolithic components.
 
-- **UI/UX design:** Provided by Route Academy.
-- **Backend and API:** Provided by Route Academy.
-- **Frontend implementation and API integration:** Ahmed Khattab.
+## Development
 
-The repository focuses on the frontend application and its integration with the supplied API.
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js compatible with the project's dependencies.
-- npm.
-
-### Installation
-
-1. Clone the repository:
-
-   ```bash
-   git clone https://github.com/ahmeddkhattabb17/Freshcart.git
-   ```
-
-2. Navigate to the project directory:
-
-   ```bash
-   cd Freshcart
-   ```
-
-3. Install dependencies:
-
-   ```bash
-   npm install
-   ```
-
-4. Start the development server:
-
-   ```bash
-   npm run dev
-   ```
-
-5. Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-If the project requires API configuration, add the environment variables expected by the application. Do not commit private credentials or secret keys.
-
-## Available Scripts
-
-Common Next.js scripts include:
-
-- `npm run dev` — start the development server.
-- `npm run build` — create a production build.
-- `npm run start` — start the production server after building.
-- `npm run lint` — run linting, if configured in the project.
-
-The exact scripts available are defined in `package.json`.
+Install dependencies with `npm install`, then run `npm run dev` and open `http://localhost:3000`.
 
 ## Live Demo
 
-A public live-demo URL has not been confirmed for this repository yet.
+https://freshcart-route.vercel.app/
+
+## Portfolio Focus
+
+Fresh Cart demonstrates practical e-commerce patterns, API integration, responsive UI implementation, authentication flows, cart and wishlist interactions, routing, TypeScript development, and admin dashboard implementation.
+
+## Academic Context
+
+This project was developed as part of a front-end development assignment at Route Academy. It was created for educational purposes to practice and apply frontend development concepts in a project-based setting.
+
+## Credits
+
+The UI/UX design and e-commerce API were provided by Route Academy. The frontend implementation, integration, responsive behavior, dashboard functionality, and application interactions were developed by Ahmed Khattab.
 
 ## Author
 
-**Ahmed Khattab**  
-Front-End Web Developer
-
-## License
-
-No license has been specified for this repository. Contact the project owner before reusing or distributing the code.
+**Ahmed Khattab** — Front-End Web Developer
