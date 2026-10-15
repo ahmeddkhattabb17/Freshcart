@@ -27,9 +27,7 @@ type Product = {
   images?: string[];
 };
 
-let product: Product = { id: "", name: "", category: "", brand: "", price: "0 EGP", rating: "0", reviews: "0", imageUrl: "", description: "", available: 0, images: [] };
-
-function ProductGallery() {
+function ProductGallery({ product }: { product: Product }) {
   const [selectedImage, setSelectedImage] = useState(product.imageUrl);
   useEffect(() => setSelectedImage(product.imageUrl), [product.imageUrl]);
   const images = product.images?.length ? product.images : [product.imageUrl];
@@ -62,7 +60,7 @@ function ProductGallery() {
   );
 }
 
-function PurchasePanel() {
+function PurchasePanel({ product }: { product: Product }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [quantity, setQuantity] = useState(1);
@@ -175,7 +173,7 @@ function PurchasePanel() {
 
 type ProductReview = { id: string | number; user: string; rating: number; review: string; date?: string };
 
-function ProductInformation({ reviews }: { reviews: ProductReview[] }) {
+function ProductInformation({ product, reviews }: { product: Product; reviews: ProductReview[] }) {
   const router = useRouter();
   const [tab, setTab] = useState<"details" | "reviews">("details");
   return (
@@ -251,25 +249,22 @@ function ProductInformation({ reviews }: { reviews: ProductReview[] }) {
 
 function ProductDetailsContent() {
   const params = useSearchParams();
-  const [, refresh] = useState(0);
+  const [product, setProduct] = useState<Product | null>(null);
   const [related, setRelated] = useState<any[]>([]);
   const [reviews, setReviews] = useState<ProductReview[]>([]);
   const [loadError, setLoadError] = useState("");
-  useEffect(() => { const id = params.get("productId") ?? params.get("id"); product = { id: id ?? "", name: "", category: "", brand: "", price: "0 EGP", rating: "0", reviews: "0", imageUrl: "", description: "", available: 0, images: [] }; refresh((value) => value + 1); if (!id) { setLoadError("Product was not found."); return; } let active = true; void getProductById(id).then((payload: any) => { if (!active) return; const raw = payload.data?.data ?? payload.data ?? payload; product = { id: String(raw._id ?? raw.id ?? id), name: raw.title ?? raw.name ?? "Product", category: raw.category?.name ?? "Product", brand: raw.brand?.name ?? "Brand", price: `${raw.priceAfterDiscount ?? raw.price ?? 0} EGP`, rating: String(raw.ratingsAverage ?? 0), reviews: String(raw.ratingsQuantity ?? 0), imageUrl: raw.imageCover ?? raw.imageUrl ?? "", description: raw.description ?? "", available: raw.quantity ?? 0 }; setLoadError(""); refresh((value) => value + 1); }).catch(() => { if (active) setLoadError("This product could not be found."); }); void getProductReviews(id).then((payload: any) => { if (!active) return; const data = payload.data?.data ?? payload.data ?? payload; setReviews((Array.isArray(data) ? data : []).map((item: any, index: number) => ({ id: item._id ?? item.id ?? index, user: item.user?.name ?? item.user?.email ?? "Customer", rating: Number(item.rating ?? 0), review: item.review ?? item.comment ?? "", date: item.createdAt ? String(item.createdAt).slice(0, 10) : undefined }))); }).catch(() => { if (active) setReviews([]); }); void getProductCards().then((items) => { if (active) setRelated(items); }).catch(() => { if (active) setRelated([]); }); return () => { active = false; }; }, [params]);
+  useEffect(() => { const id = params.get("productId") ?? params.get("id"); setProduct(null); if (!id) { setLoadError("Product was not found."); return; } let active = true; void getProductById(id).then((payload: any) => { if (!active) return; const raw = payload.data?.data ?? payload.data ?? payload; setProduct({ id: String(raw._id ?? raw.id ?? id), name: raw.title ?? raw.name ?? "Product", category: raw.category?.name ?? "Product", brand: raw.brand?.name ?? "Brand", price: `${raw.priceAfterDiscount ?? raw.price ?? 0} EGP`, rating: String(raw.ratingsAverage ?? 0), reviews: String(raw.ratingsQuantity ?? 0), imageUrl: raw.imageCover ?? raw.imageUrl ?? "", description: raw.description ?? "", available: raw.quantity ?? 0 }); setLoadError(""); }).catch(() => { if (active) setLoadError("This product could not be found."); }); void getProductReviews(id).then((payload: any) => { if (!active) return; const data = payload.data?.data ?? payload.data ?? payload; setReviews((Array.isArray(data) ? data : []).map((item: any, index: number) => ({ id: item._id ?? item.id ?? index, user: item.user?.name ?? item.user?.email ?? "Customer", rating: Number(item.rating ?? 0), review: item.review ?? item.comment ?? "", date: item.createdAt ? String(item.createdAt).slice(0, 10) : undefined }))); }).catch(() => { if (active) setReviews([]); }); void getProductCards().then((items) => { if (active) setRelated(items); }).catch(() => { if (active) setRelated([]); }); return () => { active = false; }; }, [params]);
   return (
     <>
       <Navbar />
       <main className="bg-slate-50">
         {loadError && <div className="mx-auto max-w-6xl px-4 pt-8 text-center text-sm font-semibold text-red-600">{loadError}</div>}
         <div className="mx-auto max-w-6xl px-4 py-5 text-xs text-slate-500">
-          Home &nbsp;›&nbsp; {product.category} &nbsp;›&nbsp; {product.name}
+          Home {product && <> &nbsp;›&nbsp; {product.category} &nbsp;›&nbsp; {product.name}</>}
         </div>
-        <section className="mx-auto grid max-w-6xl gap-6 px-4 lg:grid-cols-[270px_1fr]">
-          <ProductGallery />
-          <PurchasePanel />
-        </section>
+        {!product && !loadError ? <ProductDetailsSkeleton /> : product && <section className="mx-auto grid max-w-6xl gap-6 px-4 lg:grid-cols-[270px_1fr]"><ProductGallery product={product} /><PurchasePanel product={product} /></section>}
         <div className="mx-auto max-w-6xl px-4">
-          <ProductInformation reviews={reviews} />
+          {product && <ProductInformation product={product} reviews={reviews} />}
           <section className="py-12">
             <h2 className="border-l-4 border-emerald-500 pl-3 text-xl font-bold text-slate-800">
               You May Also <span className="text-emerald-600">Like</span>
@@ -283,6 +278,10 @@ function ProductDetailsContent() {
       <Footer />
     </>
   );
+}
+
+function ProductDetailsSkeleton() {
+  return <section className="mx-auto grid max-w-6xl animate-pulse gap-6 px-4 lg:grid-cols-[270px_1fr]"><div className="aspect-square rounded-xl bg-slate-200" /><div className="rounded-xl bg-white p-6"><div className="h-5 w-32 rounded bg-slate-200" /><div className="mt-5 h-10 w-2/3 rounded bg-slate-200" /><div className="mt-5 h-8 w-28 rounded bg-slate-200" /><div className="mt-8 h-20 rounded bg-slate-100" /><div className="mt-6 h-11 rounded bg-slate-200" /></div></section>;
 }
 
 export default function ProductDetailsPage() {
