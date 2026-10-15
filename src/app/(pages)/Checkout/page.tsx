@@ -6,7 +6,7 @@ import Icon from "@/Components/Icon";
 import Navbar from "@/Components/common/Navbar";
 import OrderSummary from "@/Components/OrderSummary";
 import { clearCart, getCart } from "@/services/cart.services";
-import { createCheckoutSession } from "@/services/orders.services";
+import { createCashOrder, createCheckoutSession } from "@/services/orders.services";
 import { z } from "zod";
 
 const checkoutSchema = z.object({
@@ -196,9 +196,18 @@ export default function CheckoutPage() {
     setFieldErrors({});
     if (!cartId) return;
     if (payment === "cash") {
-      await clearCart();
-      window.localStorage.setItem("freshcart-toast", "Your purchase has been placed successfully");
-      window.location.href = "/Orders";
+      setSubmitting(true);
+      setFormError("");
+      try {
+        await createCashOrder(cartId, address.data);
+        await clearCart();
+        window.localStorage.setItem("freshcart-toast", "Your purchase has been placed successfully");
+        window.location.href = "/Orders";
+      } catch (error) {
+        setFormError(error instanceof Error ? error.message : "Unable to place your order");
+      } finally {
+        setSubmitting(false);
+      }
       return;
     }
     setSubmitting(true);

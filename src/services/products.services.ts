@@ -50,7 +50,7 @@ function mapProductCard(product: IProduct): ProductCard {
   const category = getCategoryName(product);
 
   return {
-    id: product.id ?? product._id ?? product.title ?? product.name ?? "",
+    id: product._id ?? product.id ?? product.title ?? product.name ?? "",
     name: product.name ?? product.title ?? "Product",
     category: category ?? "FreshCart",
     price: formatPrice(product.priceAfterDiscount ?? product.price),
@@ -69,10 +69,6 @@ function productMatchesCategory(product: IProduct, categoryMatch: string) {
 
   if (match === "men") {
     return /\bmen\b/.test(category) && !/\bwomen\b/.test(category);
-  }
-
-  if (match === "women") {
-    return /\bwomen\b/.test(category) && !/\bmen\b/.test(category);
   }
 
   if (match === "women") {
@@ -110,7 +106,7 @@ export async function getAdminProducts() {
   const productsResponse = await getAllProducts().catch(() => ({ data: [] }));
 
   return (productsResponse?.data ?? []).map((product: IProduct) => ({
-    id: product.id ?? product._id ?? product.title ?? product.name ?? "",
+    id: product._id ?? product.id ?? product.title ?? product.name ?? "",
     name: product.name ?? product.title ?? "Product",
     count: formatPrice(product.priceAfterDiscount ?? product.price),
     imageUrl: product.imageUrl ?? product.imageCover,

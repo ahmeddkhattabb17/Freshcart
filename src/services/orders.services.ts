@@ -24,6 +24,12 @@ export const getAllOrders = () => apiRequest<unknown[]>("/orders/");
 export const getUserOrders = (userId: string) =>
   apiRequest<unknown[]>(`/orders/user/${userId}`);
 
+export const createCashOrder = (cartId: string, shippingAddress: ShippingAddress) =>
+  apiRequest(`/orders/${cartId}`, {
+    method: "POST",
+    body: JSON.stringify({ shippingAddress }),
+  });
+
 export const createCheckoutSession = (
   cartId: string,
   shippingAddress: ShippingAddress,

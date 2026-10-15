@@ -222,18 +222,19 @@ export default function OrdersPage() {
 
     getUserOrders(userId)
       .then((response) => {
-        const data = Array.isArray(response) ? response : [];
-        const mappedOrders: Order[] = data.map((raw: any) => ({
-          id: raw._id ?? raw.id,
+        const payload: any = response;
+        const data = Array.isArray(payload) ? payload : payload?.orders ?? payload?.data ?? [];
+        const mappedOrders: Order[] = data.map((raw: any, orderIndex: number) => ({
+          id: raw._id ?? raw.id ?? `order-${orderIndex}`,
           status: (raw.isDelivered ? "Delivered" : raw.isPaid ? "On the way" : "Processing") as Order["status"],
           date: raw.createdAt ? new Date(raw.createdAt).toLocaleDateString() : "",
-          itemCount: raw.cartItems?.length ?? 0,
+          itemCount: raw.cartItems?.length ?? raw.items?.length ?? 0,
           city: raw.shippingAddress?.city ?? "",
           total: `${raw.totalOrderPrice ?? 0} EGP`,
           address: raw.shippingAddress?.details ?? "",
           phone: raw.shippingAddress?.phone ?? "",
-          items: (raw.cartItems ?? []).map((item: any) => ({
-            id: item._id ?? item.product?._id,
+          items: (raw.cartItems ?? raw.items ?? []).map((item: any, itemIndex: number) => ({
+            id: item._id ?? item.product?._id ?? `item-${orderIndex}-${itemIndex}`,
             name: item.product?.title ?? item.product?.name ?? "Product",
             quantity: item.count ?? item.quantity ?? 1,
             price: `${item.price ?? item.product?.price ?? 0} EGP`,
