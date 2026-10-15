@@ -70,7 +70,7 @@ function PurchasePanel() {
   const price = Number(product.price.replace(/[^0-9.]/g, "")) || 0;
   async function cartAction() { if (!window.localStorage.getItem("freshcart-token")) { setMessage("Please sign in first"); return; } try { await addToCart(productId()); setMessage("Added to cart"); } catch (error) { setMessage(error instanceof Error ? error.message : "Unable to add to cart"); } }
   async function wishlistAction() { if (!window.localStorage.getItem("freshcart-token")) { setMessage("Please sign in first"); return; } try { await addToWishlist(productId()); setMessage("Added to wishlist"); } catch (error) { setMessage(error instanceof Error ? error.message : "Unable to add to wishlist"); } }
-  function productId() { return searchParams.get("productId") ?? product.id ?? ""; }
+  function productId() { return searchParams.get("productId") ?? searchParams.get("id") ?? product.id ?? ""; }
   return (
     <section className="rounded-xl border border-slate-100 bg-white p-6 shadow-sm">
       <div className="flex flex-wrap gap-2">
@@ -254,11 +254,13 @@ function ProductDetailsContent() {
   const [, refresh] = useState(0);
   const [related, setRelated] = useState<any[]>([]);
   const [reviews, setReviews] = useState<ProductReview[]>([]);
-  useEffect(() => { const id = params.get("productId"); if (!id) return; void getProductById(id).then((payload: any) => { const raw = payload.data ?? payload; product = { name: raw.title ?? raw.name ?? "Product", category: raw.category?.name ?? "Product", brand: raw.brand?.name ?? "Brand", price: `${raw.priceAfterDiscount ?? raw.price ?? 0} EGP`, rating: String(raw.ratingsAverage ?? 0), reviews: String(raw.ratingsQuantity ?? 0), imageUrl: raw.imageCover ?? raw.imageUrl ?? "", description: raw.description ?? "", available: raw.quantity ?? 0 }; refresh((value) => value + 1); }).catch(() => undefined); void getProductReviews(id).then((payload: any) => { const data = payload.data ?? payload; setReviews((Array.isArray(data) ? data : []).map((item: any, index: number) => ({ id: item._id ?? item.id ?? index, user: item.user?.name ?? item.user?.email ?? "Customer", rating: Number(item.rating ?? 0), review: item.review ?? item.comment ?? "", date: item.createdAt ? String(item.createdAt).slice(0, 10) : undefined }))); }).catch(() => setReviews([])); void getProductCards().then(setRelated).catch(() => setRelated([])); }, [params]);
+  const [loadError, setLoadError] = useState("");
+  useEffect(() => { const id = params.get("productId") ?? params.get("id"); if (!id) { setLoadError("Product was not found."); return; } void getProductById(id).then((payload: any) => { const raw = payload.data ?? payload; product = { id: String(raw._id ?? raw.id ?? id), name: raw.title ?? raw.name ?? "Product", category: raw.category?.name ?? "Product", brand: raw.brand?.name ?? "Brand", price: `${raw.priceAfterDiscount ?? raw.price ?? 0} EGP`, rating: String(raw.ratingsAverage ?? 0), reviews: String(raw.ratingsQuantity ?? 0), imageUrl: raw.imageCover ?? raw.imageUrl ?? "", description: raw.description ?? "", available: raw.quantity ?? 0 }; setLoadError(""); refresh((value) => value + 1); }).catch(() => setLoadError("This product could not be found.")); void getProductReviews(id).then((payload: any) => { const data = payload.data ?? payload; setReviews((Array.isArray(data) ? data : []).map((item: any, index: number) => ({ id: item._id ?? item.id ?? index, user: item.user?.name ?? item.user?.email ?? "Customer", rating: Number(item.rating ?? 0), review: item.review ?? item.comment ?? "", date: item.createdAt ? String(item.createdAt).slice(0, 10) : undefined }))); }).catch(() => setReviews([])); void getProductCards().then(setRelated).catch(() => setRelated([])); }, [params]);
   return (
     <>
       <Navbar />
       <main className="bg-slate-50">
+        {loadError && <div className="mx-auto max-w-6xl px-4 pt-8 text-center text-sm font-semibold text-red-600">{loadError}</div>}
         <div className="mx-auto max-w-6xl px-4 py-5 text-xs text-slate-500">
           Home &nbsp;›&nbsp; {product.category} &nbsp;›&nbsp; {product.name}
         </div>
