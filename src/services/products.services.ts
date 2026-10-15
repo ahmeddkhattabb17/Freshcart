@@ -11,14 +11,14 @@ export async function getAllProducts() {
 }
 
 export async function getProductById(id: string) {
-  const response = await fetch(`${BASE_URL}/api/v1/products/${id}`, { next: { revalidate: 600 } });
+  const response = await fetch(`/api/products/${encodeURIComponent(id)}`);
   if (!response.ok) throw new Error("Unable to load product");
   return response.json();
 }
 
 
 export async function getProductReviews(id: string) {
-  const response = await fetch(`${BASE_URL}/api/v1/products/${id}/reviews`);
+  const response = await fetch(`/api/products/${encodeURIComponent(id)}/reviews`);
   if (!response.ok) throw new Error("Unable to load product reviews");
   return response.json();
 }
