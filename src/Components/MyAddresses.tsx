@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Icon from "./Icon";
-import { getAddresses, addAddress } from "@/services/addresses.services";
+import { getAddresses, addAddress, removeAddress } from "@/services/addresses.services";
 
 type Address = {
   id: string | number;
@@ -15,10 +15,13 @@ export default function MyAddresses() {
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
+  const [toast, setToast] = useState("");
   useEffect(() => { void getAddresses().then((data) => setAddresses(Array.isArray(data) ? (data as any[]).map((address, index) => ({ id: address._id ?? address.id ?? `address-${index}`, name: address.name ?? "Address", address: address.details ?? address.address ?? "", phone: address.phone ?? "", city: address.city ?? "" })) : [])).catch((err) => setError(err instanceof Error ? err.message : "Unable to load addresses")); }, []);
   async function submit(event: React.FormEvent<HTMLFormElement>) { event.preventDefault(); const form = new FormData(event.currentTarget); const payload = { name: String(form.get("name") ?? ""), details: String(form.get("details") ?? ""), phone: String(form.get("phone") ?? ""), city: String(form.get("city") ?? "") }; if (!payload.name || !payload.details || !payload.city || !/^01\d{9}$/.test(payload.phone)) { setError("Please enter valid address details and phone number."); return; } try { const saved = await addAddress(payload); setAddresses((current) => [...current, saved as Address]); setOpen(false); setError(""); } catch (err) { setError(err instanceof Error ? err.message : "Unable to add address"); } }
+  async function deleteAddress(id: string | number) { try { await removeAddress(id); setAddresses((current) => current.filter((address) => address.id !== id)); setToast("Address removed successfully"); } catch (err) { setToast(err instanceof Error ? err.message : "Unable to remove address"); } finally { window.setTimeout(() => setToast(""), 2500); } }
   return (
     <div>
+      {toast && <div role="status" className="fixed left-1/2 top-6 z-50 -translate-x-1/2 rounded-lg bg-white px-4 py-3 text-sm font-semibold text-emerald-700 shadow-xl ring-1 ring-emerald-100">{toast}</div>}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-bold text-slate-800">My Addresses</h2>
@@ -58,9 +61,10 @@ export default function MyAddresses() {
               </button>
               <button
                 aria-label="Delete address"
+                onClick={() => void deleteAddress(address.id)}
                 className="grid h-9 w-9 place-items-center rounded-lg bg-slate-50"
               >
-                <Icon name="return" className="h-4 w-4" />
+                <Icon name="delete" className="h-4 w-4 text-red-500" />
               </button>
             </div>
           </article>

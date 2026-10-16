@@ -17,4 +17,5 @@ export const signUp = (payload: z.infer<typeof signupSchema>) => apiRequest("/au
 export const sendResetCode = (email: string) => apiRequest("/auth/forgotPasswords", { method: "POST", body: JSON.stringify({ email }) });
 export const verifyResetCode = (resetCode: string) => apiRequest("/auth/verifyResetCode", { method: "POST", body: JSON.stringify({ resetCode }) });
 export const resetPassword = (email: string, newPassword: string) => apiRequest("/auth/resetPassword", { method: "PUT", body: JSON.stringify({ email, newPassword }) });
+export const changeMyPassword = (payload: { currentPassword: string; password: string; rePassword: string }) => apiRequest("/users/changeMyPassword", { method: "PUT", body: JSON.stringify(payload) });
 export const updateLoggedUser = (payload: { name: string; email: string; phone: string }) => apiRequest("/users/updateMe/", { method: "PUT", body: JSON.stringify(payload) });

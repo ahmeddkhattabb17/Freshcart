@@ -122,23 +122,26 @@ function Services() {
 export default function CartPage() {
   const [items, setItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState("");
+  const notify = (message: string) => { setToast(message); window.setTimeout(() => setToast(""), 2500); };
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
   const subtotal = items.reduce((sum, item) => sum + Number(item.price.replace(" EGP", "")) * item.quantity, 0);
-  const changeQuantity = (id: string | number, count: number) => updateCartQuantity(id, count).then(() => setItems((current) => current.map((item) => item.id === id ? { ...item, quantity: count, total: `${Number(item.price.replace(" EGP", "")) * count} EGP` } : item))).catch((error) => window.alert(error.message));
-  const removeItem = (id: string | number) => removeFromCart(id).then(() => setItems((current) => current.filter((item) => item.id !== id))).catch((error) => window.alert(error.message));
+  const changeQuantity = (id: string | number, count: number) => updateCartQuantity(id, count).then(() => setItems((current) => current.map((item) => item.id === id ? { ...item, quantity: count, total: `${Number(item.price.replace(" EGP", "")) * count} EGP` } : item))).catch((error) => notify(error instanceof Error ? error.message : "Unable to update cart"));
+  const removeItem = (id: string | number) => removeFromCart(id).then(() => { setItems((current) => current.filter((item) => item.id !== id)); notify("Removed from cart"); }).catch((error) => notify(error instanceof Error ? error.message : "Unable to remove item"));
   const clearAllItems = async () => {
     if (!items.length) return;
     try {
       await Promise.all(items.map((item) => removeFromCart(item.id)));
       setItems([]);
     } catch (error) {
-      window.alert(error instanceof Error ? error.message : "Unable to clear the cart");
+      notify(error instanceof Error ? error.message : "Unable to clear the cart");
     }
   };
   useEffect(() => { const clearOnLogout = () => { if (!window.localStorage.getItem("freshcart-token")) setItems([]); }; window.addEventListener("auth-change", clearOnLogout); getCart().then((cart) => { const source = cart.products ?? cart.cartItems ?? []; setItems((source as any[]).map((entry) => { const product = entry.product ?? entry; const quantity = entry.count ?? entry.quantity ?? 1; const price = entry.price ?? entry.priceAfterDiscount ?? product.priceAfterDiscount ?? product.price ?? 0; return { id: product._id ?? product.id, name: product.title ?? product.name, category: product.category?.name ?? "Product", sku: product._id ?? product.id, price: `${price} EGP`, total: `${Number(price) * quantity} EGP`, quantity, imageUrl: product.imageCover ?? product.imageUrl ?? "", inStock: true }; })); }).catch(() => setItems([])).finally(() => setLoading(false)); return () => window.removeEventListener("auth-change", clearOnLogout); }, []);
   return (
     <>
       <Navbar />
+      {toast && <div role="status" className="fixed left-1/2 top-6 z-50 -translate-x-1/2 rounded-lg bg-white px-4 py-3 text-sm font-semibold text-emerald-700 shadow-xl ring-1 ring-emerald-100">{toast}</div>}
       <main className="bg-slate-50">
         <div className="mx-auto max-w-6xl px-4 py-7">
           <p className="text-sm text-slate-500">

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Icon from "./Icon";
-import { resetPassword, updateLoggedUser } from "@/services/auth.services";
+import { changeMyPassword, updateLoggedUser } from "@/services/auth.services";
 import { z } from "zod";
 
 const passwordSchema = z.object({
@@ -43,6 +43,7 @@ export default function AccountSettings() {
   const [loading, setLoading] = useState(true);
   const [passwordError, setPasswordError] = useState("");
   const [passwordMessage, setPasswordMessage] = useState("");
+  const [profileMessage, setProfileMessage] = useState("");
   useEffect(() => {
     const token = window.localStorage.getItem("freshcart-token");
     if (token) {
@@ -58,7 +59,7 @@ export default function AccountSettings() {
     const form = new FormData(event.currentTarget);
     const result = passwordSchema.safeParse({ currentPassword: form.get("currentPassword"), newPassword: form.get("newPassword"), confirmPassword: form.get("confirmPassword") });
     if (!result.success) { setPasswordError(result.error.issues[0].message); return; }
-    try { await resetPassword(account.email, result.data.newPassword); setPasswordMessage("Password updated successfully"); event.currentTarget.reset(); }
+    try { await changeMyPassword({ currentPassword: result.data.currentPassword, password: result.data.newPassword, rePassword: result.data.confirmPassword }); setPasswordMessage("Password updated successfully"); event.currentTarget.reset(); }
     catch (error) { setPasswordError(error instanceof Error ? error.message : "Unable to update password"); }
   }
   if (loading) return <div className="animate-pulse space-y-5"><div className="h-8 w-48 rounded bg-slate-200" /><div className="h-72 rounded-xl bg-white" /><div className="h-80 rounded-xl bg-white" /></div>;
@@ -68,7 +69,7 @@ export default function AccountSettings() {
       <p className="mt-1 text-sm text-slate-500">
         Update your profile information and change your password
       </p>
-      <form onSubmit={(event) => { event.preventDefault(); const data = new FormData(event.currentTarget); updateLoggedUser({ name: String(data.get("fullName")), email: String(data.get("email")), phone: String(data.get("phone")) }).then(() => window.alert("Profile updated successfully")).catch((error) => window.alert(error instanceof Error ? error.message : "Unable to update profile")); }} className="mt-5 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <form onSubmit={(event) => { event.preventDefault(); const data = new FormData(event.currentTarget); updateLoggedUser({ name: String(data.get("fullName")), email: String(data.get("email")), phone: String(data.get("phone")) }).then(() => { setProfileMessage("Profile updated successfully"); window.setTimeout(() => setProfileMessage(""), 2500); }).catch((error) => { setProfileMessage(error instanceof Error ? error.message : "Unable to update profile"); window.setTimeout(() => setProfileMessage(""), 2500); }); }} className="mt-5 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         <div className="p-6 sm:p-8">
           <div className="flex items-center gap-3">
             <span className="grid h-11 w-11 place-items-center rounded-lg bg-emerald-100 text-emerald-600">
@@ -105,6 +106,7 @@ export default function AccountSettings() {
           <button className="mt-6 rounded-lg bg-emerald-600 px-5 py-3 text-sm font-semibold text-white">
             Save Changes
           </button>
+          {profileMessage && <p role="status" className="mt-3 text-sm font-medium text-emerald-600">{profileMessage}</p>}
         </div>
         <div className="border-t border-slate-100 bg-slate-50 p-6 sm:p-8">
           <h3 className="font-bold text-slate-800">Account Information</h3>

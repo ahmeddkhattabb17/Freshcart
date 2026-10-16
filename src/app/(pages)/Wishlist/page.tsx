@@ -117,7 +117,7 @@ export default function WishlistPage() {
     setAddingId(item.id);
     try { await addToCart(item.id); setToast("Added to cart"); } catch (error) { setToast(error instanceof Error ? error.message : "Unable to add to cart"); } finally { setAddingId(null); window.setTimeout(() => setToast(""), 2500); }
   };
-  const removeItem = (id: string | number) => removeFromWishlist(id).then(() => setItems((current) => current.filter((item) => item.id !== id))).catch((error) => window.alert(error.message));
+  const removeItem = (id: string | number) => removeFromWishlist(id).then(() => { setItems((current) => current.filter((item) => item.id !== id)); setToast("Removed from wishlist"); window.setTimeout(() => setToast(""), 2500); }).catch((error) => { setToast(error instanceof Error ? error.message : "Unable to remove from wishlist"); window.setTimeout(() => setToast(""), 2500); });
   useEffect(() => { const clearOnLogout = () => { if (!window.localStorage.getItem("freshcart-token")) setItems([]); }; window.addEventListener("auth-change", clearOnLogout); getWishlist().then((data: any[]) => setItems(data.map((entry) => { const product = entry.product ?? entry; return { id: product._id ?? product.id, name: product.title ?? product.name, category: product.category?.name ?? "Product", price: `${product.priceAfterDiscount ?? product.price ?? 0} EGP`, oldPrice: product.priceAfterDiscount ? `${product.price} EGP` : undefined, imageUrl: product.imageCover ?? product.imageUrl ?? "", inStock: true }; }))).catch(() => setItems([])); return () => window.removeEventListener("auth-change", clearOnLogout); }, []);
   return (
     <>
