@@ -56,10 +56,11 @@ export default function AccountSettings() {
   }, []);
   async function changePassword(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault(); setPasswordError(""); setPasswordMessage("");
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     const result = passwordSchema.safeParse({ currentPassword: form.get("currentPassword"), newPassword: form.get("newPassword"), confirmPassword: form.get("confirmPassword") });
     if (!result.success) { setPasswordError(result.error.issues[0].message); return; }
-    try { await changeMyPassword({ currentPassword: result.data.currentPassword, password: result.data.newPassword, rePassword: result.data.confirmPassword }); setPasswordMessage("Password updated successfully"); event.currentTarget.reset(); }
+    try { await changeMyPassword({ currentPassword: result.data.currentPassword, password: result.data.newPassword, rePassword: result.data.confirmPassword }); setPasswordMessage("Password updated successfully"); formElement.reset(); }
     catch (error) { setPasswordError(error instanceof Error ? error.message : "Unable to update password"); }
   }
   if (loading) return <div className="animate-pulse space-y-5"><div className="h-8 w-48 rounded bg-slate-200" /><div className="h-72 rounded-xl bg-white" /><div className="h-80 rounded-xl bg-white" /></div>;
